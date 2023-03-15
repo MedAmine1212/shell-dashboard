@@ -60,7 +60,7 @@
 }
 .loginContainer{
     min-height: 1920px;
-    background-color: #FCDF4A;
+    display: flex;
     justify-content: center;
     padding: 80px;
     height: 100%;
@@ -122,6 +122,7 @@
     justify-content: center
 }
 
+
 .stations{
     width: 300px;
     display: flex;
@@ -143,7 +144,26 @@
     grid-template-columns: auto auto auto auto auto;
     padding: 20px;
 }
-
+.station-admin-container{
+    width: 100% !important;
+    display: grid;
+    grid-template-columns: auto auto auto ;
+    padding: 20px;
+}
+.stationAdminPic{
+    border-radius: 360px;
+    filter: drop-shadow(5px 2px 5px black);
+    margin-top: 5px;
+}
+.stationAdmin{
+    margin-right: 70px;
+    height: 280px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    width: 100px;
+    justify-content: center
+}
 .loading-spinner {
     display: flex;
     justify-content: center;
@@ -309,6 +329,8 @@
 
 /* Modal buttons */
 .dialog-button {
+    width:90px;
+    height:38px;
     margin-left: 0.5rem;
 }
 
@@ -326,4 +348,115 @@
 }
 .stationImage{
     margin-left: -40px;
+}
+
+.card{
+    filter: drop-shadow(5px 2px 5px darkgrey);
+    padding: 10px;
+}
+
+.floating-span{
+    position: fixed;
+    cursor: pointer;
+    opacity: 0.8;
+    left: 90.5%;
+    height: 40px;
+    padding-top: 14px;
+    top:30%
+}
+.floating-span:hover {
+    opacity: 1;
+}
+
+.station-employees{
+    opacity: 1;
+    position: fixed;
+    z-index: 9999;
+    float: left;
+    left:78%;
+    overflow: hidden;
+    min-height: 570px;
+    max-height: 570px;
+    width: 450px;
+    background-color: white;
+    filter: drop-shadow(5px 5px 10px black);
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+}
+.side-container{
+    overflow-y: auto;
+    max-height: 560px;
+}
+
+.clients-header{
+    display: flex;
+}
+
+.flip-container {
+    margin-left: 20px;
+    display: flex;border-radius: 40px;border: 1px solid lightgrey;
+    height: 45px;
+}
+.flip {
+    cursor: pointer;
+    display: flex;
+    border-radius: 40px;
+    padding: 10px 5px 5px;
+    justify-content: center;width: 95px;
+}
+
+.flip-active {
+    background-color: #54b4d3;
+}
+
+#interactive canvas {
+    display: none;
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+}
+#interactive video {
+    width:150px;
+    border-radius: 10px;
+}
+.barcodeHr{
+    animation: MoveUpDown 1.8s linear infinite;
+    position: absolute;
+    width: 150px;
+    color: red;
+    opacity: 1;
+    border: 1px solid red;
+}
+@keyframes MoveUpDown {
+    0%, 100% {
+        bottom: 380px;
+    }
+    50% {
+        bottom: 300px;
+    }
+}
+
+.numerator {
+    color:grey;
+    border:1px solid grey;
+    border-radius: 200px;
+    padding-left: 10px;
+    padding-top: 2px;
+    width: 30px;
+    margin:20px;
+    height: 30px
+}
+.numerator:hover {
+    border:1px solid #54b4d3;
+    cursor: pointer;
+}
+.numerator-active {
+    cursor: default !important;
+    color:white;
+    border:1px solid #54b4d3;
+    background-color: #54b4d3;
+}
+
+.dp__input_wrap svg {
+    margin-top: 15px;
 }

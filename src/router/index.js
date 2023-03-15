@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import WelcomePage from "@/components/WelcomePage"
 import LoginPage from "@/components/LoginPage"
 import Borne from "@/components/dashboard/Bornes"
 import auth from './../services/auth.js'
@@ -12,12 +11,15 @@ import Services from "@/components/dashboard/Services";
 import AdsPage from "@/components/dashboard/Ads";
 import WorkSchedules from "@/components/dashboard/WorkSchedules";
 import Analytics from "@/components/dashboard/Analytics";
+import Vehicles from "@/components/dashboard/Vehicles";
+import Consultations from "@/components/dashboard/Consultations";
+import Products from "@/components/dashboard/Products";
 
 const routes = [
     {
         path: '/',
-        redirect: "/home",
-        name: 'home'
+        redirect: "/dashboard/stations",
+        name: ''
     },
     {
         path: '/dashboard',
@@ -44,7 +46,26 @@ const routes = [
                 // component: ()=>
                 //     import('view/view.vue') //lazy loading
             },
-
+            {
+                path: 'vehicles/:id',
+                name: 'vehicles',
+                components: {
+                    default: DashboardPage,
+                    second: Vehicles
+                }
+                // component: ()=>
+                //     import('view/view.vue') //lazy loading
+            },
+            {
+                path: 'consultations/:sender/:id',
+                name: 'consultations',
+                components: {
+                    default: DashboardPage,
+                    second: Consultations
+                }
+                // component: ()=>
+                //     import('view/view.vue') //lazy loading
+            },
             {
                 path: 'clients',
                 name: 'clients',
@@ -86,6 +107,16 @@ const routes = [
                 //     import('view/view.vue') //lazy loading
             },
             {
+                path: 'products',
+                name: 'products',
+                components: {
+                    default: DashboardPage,
+                    second: Products
+                }
+                // component: ()=>
+                //     import('view/view.vue') //lazy loading
+            },
+            {
                 path: 'workSchedules',
                 name: 'workSchedules',
                 components: {
@@ -118,29 +149,11 @@ const routes = [
         ]
     },
     {
-        path: '/welcome',
-        component:WelcomePage,
-        name: "welcome"
-        // component: ()=>
-        //     import('view/view.vue') //lazy loading
-    },
-    {
-        path: '/home',
-        component:WelcomePage,
-        name: "home"
-        // component: ()=>
-        //     import('view/view.vue') //lazy loading
-    },
-    {
         path: '/login',
         component:LoginPage,
         name: "login"
         // component: ()=>
         //     import('view/view.vue') //lazy loading
-    },
-    {
-        path: '/',
-        redirect:'/welcome'
     },
 ];
 
@@ -156,25 +169,8 @@ router.beforeEach((to, from, next)=>{
 
     } else {
         //Authenticated
-
-        if(to.name === 'login' || to.name === "welcome") {
-            if(auth.actions.getUserType() === "client" || auth.actions.getUserType() === "employee") {
-                if(to.name !== "home") {
-                    next({ name: 'home' });
-                }
-        } else {
-                if(to.name !== "dashboard") {
-                    next({ name: 'dashboard' });
-                }
-            }
-        }
-
-        if(auth.actions.getUserType() === "client" || auth.actions.getUserType() === "employee") {
-            if(to.path.startsWith("/dashboard")) {
-                next({ name: 'home' });
-            }
-        } else {
-            if(to.path.startsWith("/home")) {
+        if(to.name === 'login') {
+            if(to.name !== "dashboard") {
                 next({ name: 'dashboard' });
             }
         }

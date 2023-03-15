@@ -4,7 +4,7 @@
         <div class="button-container">
             <button v-if="!loading && this.saveEdit" type="button" @click="saveEditedStation()"  title="Save changes"  class="btn btn-success">Save change</button>
             <button v-if="!loading && this.saveEdit" type="button"  @click="this.editedStation = {...this.station}, saveEdit = false" title="Cancel changes"  class="btn btn-warning">Cancel change</button>
-        <button v-if="!loading" type="button" @click="showConfirmationDialog = true, confirmationDialogTitle = 'this station',clickedFrom=1" title="Delete station"  class="btn btn-danger">Delete</button>
+        <button v-if="!loading" type="button" @click="showConfirmationDialog = true, confirmationMessage = 'this station',clickedFrom=1" title="Delete station"  class="btn btn-danger">Delete</button>
         </div>
         <div style="height: 40px">
         <h2 v-if="!editLabel">{{editedStation.label}} <span @click="editLabel = true" class="badge badge-success"  style="cursor:pointer;margin-left: 15px;font-size: 12px" title="edit">
@@ -23,20 +23,44 @@
         </span>
         </div>
         <hr style="width: 45px;margin-left: 18px">
-        <h6 style="margin-left: 10px">
+        <h6 style="margin-left: 10px;display: flex;height: 20px">
             <b style="margin-right: 7px">Station manager:</b>
             <span v-if="station.station_admin" class="badge badge-success">
                 <span style="cursor:pointer;">{{station.station_admin.user.firstName}} {{station.station_admin.user.lastName}}</span>
-                 <span  style="cursor:pointer;margin-left: 15px" title="edit">
-                        <i class="far fa-edit"></i>
+                 <span @click="loadStationAdmins()"  style="cursor:pointer;margin-left: 15px" title="edit">
+                        <i v-if="!showSelecStationAdmin" class="far fa-edit"></i>
                     </span>
             </span>
             <span v-else class="badge badge-warning">
                 <span style="cursor:pointer;">No set</span>
-             <span  style="cursor:pointer;margin-left: 15px" title="edit">
-                        <i class="far fa-edit"></i>
+             <span @click="loadStationAdmins()"  style="cursor:pointer;margin-left: 15px" title="edit">
+                        <i v-if="!showSelecStationAdmin" class="far fa-edit"></i>
                     </span>
             </span>
+            <span v-if="showSelecStationAdmin">
+                <div style="display: flex;width: 400px;margin-left: 20px;height: 35px;margin-top: -6px"  v-if="!stationAdminsLoading">
+                <div style="display: flex" v-if="unsetStationAdmins.length">
+                <select id="selectStationAdmin" class="form-control">
+                <option disabled style="color: grey" value="">Select station admin: </option>
+                <option :value="stationAdmin.id" v-for="stationAdmin in unsetStationAdmins" :key="stationAdmin.id">{{stationAdmin.user.firstName}} {{stationAdmin.user.lastName}}</option>
+            </select>
+                 <span @click="setStationAdmin()" style="font-size: 20px;cursor:pointer;height: 30px;margin-top:2px;border-radius:5px " title="Save" class="badge badge-success">
+                            <i class="far fa-check-circle"></i>
+                    </span>
+                        <span @click="this.showSelecStationAdmin = false, this.stationAdminsLoading = false" style="font-size: 20px;cursor:pointer;height: 30px;margin-top: 2px;border-radius:5px " title="Cancel" class="badge badge-danger">
+                            <i class="fas fa-times-circle"></i>
+                    </span>
+                </div>
+                    <div style="display: flex;margin-top: 5px" v-else>
+                        No available station admins ! <span :to="`/dashboard/stationAdmins/add`" @click="showAddStationAdminModal = true" class="badge badge-success" style="cursor: pointer;text-decoration: underline;margin-left:10px;height: 20px">Add station admin</span>
+                    </div>
+            </div>
+            <span v-else>
+                <div>
+                <div class="spinner-grow text-warning" style="margin-left: 20px;width: 15px;height: 15px" role="status"><span class="sr-only">Loading...</span></div>
+    </div>
+            </span>
+                </span>
         </h6>
         <hr style="width: 45px;margin-left: 18px">
         <h6 style="margin-left: 10px">
@@ -73,16 +97,39 @@
         </span>
         </div>
     </div>
-    <hr v-if="!loading" style="border:1px solid black">
-    <button v-if="!loading" type="button" @click="showModal = true" title="Add borne" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
-
-    <span style="margin-left: 5px" v-if="!loading">
-        <h3 v-if="bornes.length">Bornes</h3>
-    </span>
     <div class="spinner-container" v-if="loading" >
-    <div class="spinner-grow text-warning spinner" role="status"><span class="sr-only">Loading...</span></div>
+        <div class="spinner-grow text-warning spinner" role="status"><span class="sr-only">Loading...</span></div>
     </div>
-    <div v-else-if="bornes.length" class="borne-container">
+    <div v-if="!loading">
+        <hr>
+        <h3 v-if="station.employees.length">Station employees
+            <span @click="showEmployees = false" v-if="showEmployees" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
+            <span @click="showEmployees = true" v-if="!showEmployees" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
+        </h3>
+        <div v-if="showEmployees">
+            <div v-if="station.employees.length">
+                <div>
+                    <UserCards :users="station.employees" :type="'employee'"></UserCards>
+                </div>
+            </div>
+            <div style="margin-top: 200px" v-else class="text-gray-600 text-center py-16">
+                No employees in this station
+            </div>
+        </div>
+    </div>
+    <hr v-if="!loading" style="border:1px solid black">
+    <div style="min-height: 200px;" v-if="!loading">
+    <button  type="button" @click="showModal = true" title="Add borne" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
+
+    <span style="margin-left: 5px">
+        <h3 v-if="bornes.length">Bornes
+          <span @click="showBornes = false" v-if="showBornes" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
+            <span @click="showBornes = true" v-if="!showBornes" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
+
+        </h3>
+    </span>
+    <div v-if="showBornes">
+    <div v-if="bornes.length" class="borne-container">
             <div class="borne" v-for="borne in bornes" :key="borne.id">
                 <img title="Online" v-if="borne.status" height="170" src="./../../assets/images/borne-online.png">
                 <img title="Offline" v-else height="170" src="./../../assets/images/borne-offline.png">
@@ -93,7 +140,8 @@
     <div style="margin-top: 100px" v-else class="text-gray-600 text-center py-16">
         No bornes in this station
     </div>
-
+    </div>
+    </div>
     <!--Add a new borne modal-->
     <div v-if="showModal" class="dialog-container" :class="{ 'd-none': !showModal }">
         <div class="dialog-box">
@@ -155,7 +203,7 @@
             </div>
             <div class="dialog-footer">
 
-                <button type="button" @click="showConfirmationDialog = true, confirmationDialogTitle='borne '+selectedBorne.id, clickedFrom = 0" class="btn btn-danger dialog-button">
+                <button type="button" @click="showConfirmationDialog = true, confirmationMessage='borne '+selectedBorne.id, clickedFrom = 0" class="btn btn-danger dialog-button">
                     Delete
                 </button>
                 <button type="button" class="btn btn-info dialog-button" @click="showDetailsModel = false, editBorne = false">
@@ -166,27 +214,19 @@
     </div>
 
     <!--Confirmation dialog-->
-    <div v-if="showConfirmationDialog" class="dialog-container" :class="{ 'd-none': !showConfirmationDialog }">
-        <div class="dialog-box" style="max-width: 350px">
-            <div class="dialog-header">
-                <h5 class="dialog-title">Delete {{confirmationDialogTitle}}</h5>
-                <button type="button" class="dialog-close" @click="showConfirmationDialog = false">
-                    &times;
-                </button>
-            </div>
-            <div class="dialog-body">
-               Are you sure you want to proceed ?
-            </div>
-            <div class="dialog-footer">
-                <button type="button" class="btn btn-danger dialog-button" @click="deleteBorneStation()">
-                    Yes
-                </button>
-                <button type="button" class="btn btn-info dialog-button" @click="showConfirmationDialog = false">
-                    No
-                </button>
-            </div>
-        </div>
-    </div>
+    <ConfirmationDialog :confirmationDialogTitle="confirmationMessage"
+                        :show.sync="showConfirmationDialog"
+                        @confirm="deleteBorneStation()"
+                        @close="showConfirmationDialog=false"
+                        ref="confirmationDialog"></ConfirmationDialog>
+
+    <add-user-dialog v-if="showAddStationAdminModal"  :modalTitle="'Add station admin'"
+                     :show.sync="showAddStationAdminModal"
+                     @user-emitted="setAdmin"
+                     :user="null"
+                     :type="'station admin'"
+                     @close="showAddStationAdminModal=false"
+                     ref="AddUserDialog" ></add-user-dialog>
 
 </div>
 </template>
@@ -194,26 +234,42 @@
 <script>
     import BorneService from "./../../services/BorneService";
     import StationService from "./../../services/StationService";
+    import ConfirmationDialog from "../dialogs/ConfirmationDialog"
+    import AddUserDialog from "../dialogs/AddUserDialog";
     import Echo from "laravel-echo";
+    import UserCards from "./UserCards";
     import 'bootstrap/dist/js/bootstrap.bundle.min.js'
    import Swal from 'sweetalert2'
    import router from "@/router";
+    import StationAdminService from "../../services/StationAdminService";
    export default {
+       components: {
+           ConfirmationDialog,
+           AddUserDialog,
+           UserCards,
+       },
        data() {
            return {
+               showEmployees: true,
+               showBornes: true,
+               showAddStationAdminModal: false,
+               stationAdminsLoading: true,
+               showSelecStationAdmin: false,
+               confirmationMessage: "",
+               showConfirmationDialog: false,
                saveEdit: null,
                editedStation: null,
                editLabel: false,
                editAddress: false,
                clickedFrom:-1,
                station: null,
-               confirmationDialogTitle: "",
-               showConfirmationDialog: false,
                editBorne: false,
                showModal: false,
                showDetailsModel: false,
                echo: null,
                bornes: [],
+               selectedId: -1,
+               unsetStationAdmins: [],
                loading : true,
                minutes: null,
                selectedBorne:null,
@@ -222,6 +278,55 @@
        // eslint-disable-next-line vue/multi-word-component-names
        name: 'Bornes',
         methods: {
+            async setAdmin(user) {
+                this.selectedId= user.id;
+                this.unsetStationAdmins = [];
+                this.unsetStationAdmins.push(user);
+                this.setStationAdmin();
+            },
+            setStationAdmin() {
+                if(this.selectedId === -1) {
+                    this.selectedId = document.getElementById("selectStationAdmin").value;
+                }
+                this.showSelecStationAdmin = false;
+                this.stationAdminsLoading = true;
+                StationAdminService.assignStationAdmin(this.selectedId,this.station.id)
+                    .then(()=>{
+                        console.log(this.unsetStationAdmins.length);
+                        for(let i=0;i<this.unsetStationAdmins.length;i++) {
+                            if(this.unsetStationAdmins[i].id == this.selectedId.toString()) {
+                                this.station.station_admin = {...this.unsetStationAdmins[i]};
+                                this.station.station_admin.user = {...this.unsetStationAdmins[i].user};
+                                this.selectedId = -1;
+                                Swal.fire({
+                                    position: 'bottom-right',
+                                    background: "rgba(19,150,71,0.8)",
+                                    color: "white",
+                                    text: 'Station admin set',
+                                    timerProgressBar: true,
+                                    showConfirmButton: false,
+                                    timer: 1000
+                                });
+                                break;
+                            }
+                        }
+                    })
+                    .catch((error)=>{
+                        console.log(error);
+                    })
+            },
+            loadStationAdmins() {
+                this.showSelecStationAdmin = true;
+                this.stationAdminsLoading = true;
+                StationAdminService.getStationAdminsWithNoStation()
+                    .then((res)=>{
+                        this.unsetStationAdmins = res.data.stationAdmins;
+                        this.stationAdminsLoading = false;
+                    })
+                    .catch((error)=>{
+                        console.log(error);
+                    })
+            },
             saveEditedStation() {
                 this.saveEdit = false;
                 StationService.updateStation(this.station.id,this.editedStation)
@@ -285,7 +390,7 @@
             },
            async deleteBorneStation() {
             this.showConfirmationDialog = false;
-            if(this.clickedFrom == 0) {
+            if(this.clickedFrom === 0) {
             BorneService.deleteBorne(this.selectedBorne.id)
                 .then(() => {
                     Swal.fire({
@@ -306,7 +411,7 @@
                 .catch((error) => {
                     console.error(error);
                 });
-            } else if(this.clickedFrom == 1) {
+            } else if(this.clickedFrom === 1) {
                 StationService.deleteStation(this.station.id)
                     .then(() => {
                         router.push({name: "stations"});
@@ -412,6 +517,13 @@
            await StationService.findById(this.$route.params.id)
                .then( async (response) => {
                    this.station = response.data.station;
+                   let st = {...this.station};
+                   st.employees = {...this.station.employees};
+                   st.employees = {...this.station.employees};
+                   st.employees = [];
+                   for(let i=0;i<this.station.employees.length;i++) {
+                       this.station.employees[i].station = this.station;
+                   }
                    this.editedStation = {...this.station};
                    console.log(this.station);
                    await BorneService.getAllByStationId(this.$route.params.id)

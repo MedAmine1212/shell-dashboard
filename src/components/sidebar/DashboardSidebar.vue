@@ -41,7 +41,13 @@
                             to="/dashboard/services"
                             class="list-group-item list-group-item-action py-2 ripple"
                             active-class="active"
-                    ><i class="fad fa-servicestack fa-fw me-3"></i><span>Services</span></router-link
+                    ><i class="fas fa-oil-can fa-fw me-3"></i><span>Services</span></router-link
+                    >
+                    <router-link
+                            to="/dashboard/products"
+                            class="list-group-item list-group-item-action py-2 ripple"
+                            active-class="active"
+                    ><i class="fad fa-servicestack fa-fw me-3"></i><span>Products</span></router-link
                     >
                     <router-link
                             to="/dashboard/ads"

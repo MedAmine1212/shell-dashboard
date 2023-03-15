@@ -5,7 +5,6 @@ const baseUrl = "http://localhost:8000/api/";
 const SECRET_KEY = "SHELLSECRETKEY";
 const USER_TYPE ="user_type";
 const TOKEN = "access_token";
-const BAR_CODE = "bar_code";
 export default {
     actions: {
         setUserType(userType) {
@@ -22,20 +21,6 @@ export default {
                 window.localStorage.removeItem(USER_TYPE);
         },
 
-        setBarCode(barCode) {
-            this.removeBarCode();
-            window.localStorage.setItem(BAR_CODE, CryptoJS.AES.encrypt(barCode, SECRET_KEY).toString());
-        },
-        getBarCode() {
-            if(window.localStorage.getItem(BAR_CODE))
-                return CryptoJS.AES.decrypt(window.localStorage.getItem(BAR_CODE), SECRET_KEY).toString(CryptoJS.enc.Utf8);
-            return null;
-        },
-        removeBarCode() {
-            if(window.localStorage.getItem(BAR_CODE))
-                window.localStorage.removeItem(BAR_CODE);
-        },
-
         setToken(token) {
             this.removeToken();
             window.localStorage.setItem(TOKEN, CryptoJS.AES.encrypt(token, SECRET_KEY).toString());
@@ -49,11 +34,8 @@ export default {
             if(window.localStorage.getItem(TOKEN))
                 window.localStorage.removeItem(TOKEN);
         },
-        getUser(barCode) {
-            return axios.get(baseUrl+"getUserType/"+barCode);
-        },
-        authenticate(barCode, password) {
-            return axios.post(baseUrl+"authenticate/",{"barCode": barCode, "password": password});
+        authenticate(email, password) {
+            return axios.post(baseUrl+"authenticate/admin",{"email": email, "password": password});
         }
     }
 }

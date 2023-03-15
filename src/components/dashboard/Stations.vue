@@ -62,20 +62,6 @@
                     <div style="margin-top: 10px;display: flex;width: 100%">
                         <input type="file" accept="image/png, image/gif, image/jpeg" class="form-control" style="width: 85%">
                     </div>
-                    <br>
-                    <div style="display: flex"><label>Station Admin</label></div>
-                    <div style="margin-top: 10px;display: flex;width: 100%">
-                        <select id="stationAdmin" style="width: 85%" type="text" class="form-control">
-                            <option value="" selected>Select later</option>
-                        </select>
-                    </div>
-                    <br>
-                    <div style="display: flex"><label>Work schedule</label></div>
-                    <div style="margin-top: 10px;display: flex;width: 100%">
-                        <select id="workSchedule" style="width: 85%" type="text" class="form-control">
-                            <option value="" selected>Select later</option>
-                        </select>
-                    </div>
                 </div>
                 <div class="dialog-footer">
                     <button type="button" @click="addStation()" class="btn btn-info dialog-button" >
