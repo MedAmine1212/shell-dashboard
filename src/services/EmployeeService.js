@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = "http://localhost:8000/api/employee/";
+const baseUrl = process.env.VUE_APP_API_BASE_URL+"api/employee/";
 import auth from './../services/auth.js'
 const requestOptions = {
     headers: {
@@ -13,9 +13,21 @@ export default {
             requestOptions.headers.Authorization = "Bearer "+auth.actions.getToken();
             return axios.get(baseUrl+"findAll",requestOptions);
         },
-        add(firstName, lastName, phone, email, password) {
+        getAllUnassigned() {
             requestOptions.headers.Authorization = "Bearer "+auth.actions.getToken();
-            return axios.post(baseUrl+"add",{'firstName': firstName, 'lastName': lastName, 'phone':phone,'email': email, 'password':password}, requestOptions);
+            return axios.get(baseUrl+"getAllUnassigned",requestOptions);
         },
+        add(firstName, lastName, phone, email, barCode) {
+            requestOptions.headers.Authorization = "Bearer "+auth.actions.getToken();
+            return axios.post(baseUrl+"add",{'firstName': firstName, 'lastName': lastName, 'phone':phone,'email': email, 'barCode':barCode}, requestOptions);
+        },
+        assignToStation(user_id,station_id) {
+            requestOptions.headers.Authorization = "Bearer "+auth.actions.getToken();
+            return axios.get(baseUrl+"assignToStation/"+user_id+"/"+station_id,requestOptions);
+        },
+        unassignFromStation(user_id,station_id) {
+            requestOptions.headers.Authorization = "Bearer "+auth.actions.getToken();
+            return axios.get(baseUrl+"unassignFromStation/"+user_id+"/"+station_id,requestOptions);
+        }
 
 }

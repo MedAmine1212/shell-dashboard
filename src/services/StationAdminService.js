@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = "http://localhost:8000/api/stationAdmin/";
+const baseUrl = process.env.VUE_APP_API_BASE_URL+"api/stationAdmin/";
 import auth from './../services/auth.js'
 const requestOptions = {
     headers: {
@@ -25,6 +25,10 @@ export default {
         requestOptions.headers.Authorization = "Bearer "+auth.actions.getToken();
         return axios.get(baseUrl+"assignStationAdmin/"+admin_id+"/"+station_id, requestOptions);
 
+    },
+    unassignStationAdmin(station_id) {
+        requestOptions.headers.Authorization = "Bearer "+auth.actions.getToken();
+        return axios.get(baseUrl+"unassignStationAdmin/"+station_id,requestOptions);
     }
 
 }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import CryptoJS from 'crypto-js'
 
-const baseUrl = "http://localhost:8000/api/";
+const baseUrl = process.env.VUE_APP_API_BASE_URL+"api/";
 const SECRET_KEY = "SHELLSECRETKEY";
 const USER_TYPE ="user_type";
 const TOKEN = "access_token";

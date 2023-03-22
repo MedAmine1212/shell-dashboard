@@ -42,7 +42,7 @@
                         :clientId="client.id"
                         @vehicle-emitted="updateVehicle"
                         @close="showModal=false"
-                        ref="AddUserDialog" ></add-vehicle-dialog>
+                        ref="AddVehicleDialog" ></add-vehicle-dialog>
 
        <ConfirmationDialog :confirmationDialogTitle="'vehicle'"
                            :show.sync="showConfirmationDialog"

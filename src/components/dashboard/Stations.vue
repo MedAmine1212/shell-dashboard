@@ -2,14 +2,30 @@
     <div>
         <div v-if="!loading" class="header-container">
             <button type="button" @click="showModal = true" style="float: right;margin-right: 60px" title="Add station" class="btn btn-warning"><i class="fas fa-plus"></i></button>
-            <h2 style="margin-left: 10px"><b>Stations</b></h2>
+           <div style="display: flex">
+               <h2 style="margin-left: 10px"><b>Stations</b></h2>
+               <div v-if="!loading" style="width: 400px;margin-left: 40px" class="d-none d-md-flex input-group w-auto my-auto">
+                   <input
+                           autocomplete="off"
+                           v-model="searchValue"
+                           type="search"
+                           class="form-control rounded"
+                           placeholder='Search here...'
+                           style="min-width: 225px"
+                   />
+                   <span class="input-group-text border-0"
+                   ><i class="fas fa-search"></i
+                   ></span>
+               </div>
+           </div>
+
             <hr style="">
         </div>
         <div class="spinner-container" v-if="loading" >
             <div class="spinner-grow text-warning spinner" role="status"><span class="sr-only">Loading...</span></div>
         </div>
         <div v-else-if="stations.length" class="station-container">
-            <div class="stations" v-for="station in paginatedStations" :key="station.id">
+            <div class="stations" v-for="station in stationsList" :key="station.id">
                     <img width="300" class="stationImage"  src="./../../assets/images/station.png">
                     <h5 style="margin-top: -5px">{{station.label}}</h5>
                 <div style="width: 100%;display: flex;justify-content: center">
@@ -31,7 +47,7 @@
                 <li class="page-item" v-for="page in pages" :key="page" :class="{ active: page === currentPage }">
                     <a class="page-link" href="#" @click.prevent="setPage(page)">{{ page }}</a>
                 </li>
-                <li class="page-item" :class="{ disabled: currentPage >= pageCount }">
+                <li class="page-item" :class="{ disabled: currentPage >= pages }">
                     <a class="page-link" href="#" @click.prevent="nextPage">Next</a>
                 </li>
             </ul>
@@ -64,7 +80,7 @@
                     </div>
                 </div>
                 <div class="dialog-footer">
-                    <button type="button" @click="addStation()" class="btn btn-info dialog-button" >
+                    <button :disabled="sending" type="button" @click="addStation()" class="btn btn-info dialog-button" >
                         Add
                     </button>
                     <button type="button" class="btn btn-danger dialog-button" @click="showModal = false">
@@ -85,6 +101,7 @@
        name: 'Stations',
         data() {
             return {
+                searchValue: "",
                 showModal: false,
                 currentPage:1,
                 sending: false,
@@ -95,19 +112,18 @@
             };
         },
         computed: {
-            paginatedStations() {
-                // calculate the index of the first item on the current page
-                const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-                // slice the stations array to get only the items for the current page
-                return this.stations.slice(startIndex, startIndex + this.itemsPerPage);
-            },
+           stationsList() {
+                let sts = this.stations.filter((station)=> station.label.toLowerCase().includes(this.searchValue.trim().toLowerCase()));
+               const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+               // slice the stations array to get only the items for the current page
+               return sts.slice(startIndex, startIndex + this.itemsPerPage);
+           },
 
         },
         methods: {
            async addStation() {
                if(this.sending)
                    return;
-               this.sending = true;
              let name = document.getElementById("stationName").value;
              let address = document.getElementById("stationAddress").value;
              if(name.length < 5) {
@@ -135,6 +151,8 @@
                  return;
              }
              // get station Admin and work schedule
+
+               this.sending = true;
                StationService.addStation(name, address)
                    .then((response) => {
 

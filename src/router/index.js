@@ -117,17 +117,15 @@ const routes = [
                 //     import('view/view.vue') //lazy loading
             },
             {
-                path: 'workSchedules',
+                path: 'workSchedules/:id',
                 name: 'workSchedules',
                 components: {
                     default: DashboardPage,
                     second: WorkSchedules
                 }
-                // component: ()=>
-                //     import('view/view.vue') //lazy loading
             },
             {
-                path: 'ads',
+                path: 'ads/:bId/:sId',
                 name: 'ads',
                 components: {
                     default: DashboardPage,

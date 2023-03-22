@@ -1,14 +1,30 @@
 <template>
+<div>
+    <div style="width: 350px !important;z-index: 999;padding-top: 10px" class="d-none d-md-flex input-group w-auto my-auto">
+        <input
+                autocomplete="off"
+                v-model="searchValue"
+                type="search"
+                class="form-control rounded"
+                placeholder='Search here... (Name, Email, Phone)'
+                style="min-width: 225px"
+        />
+        <span class="input-group-text border-0"
+        ><i class="fas fa-search"></i
+        ></span>
+    </div><br>
     <div class="station-admin-container">
-<div v-for="user in users" :key="user.id" class="card stationAdmin" style="width: 18rem;">
+    <div v-if="sending" class="spinner-grow text-warning" style="position: absolute;height: 30px;width: 30px;top: 10px;left:80%" role="status"><span class="sr-only">Sending...</span></div>
+<div v-for="user in usersList" :key="user.id" class="card stationAdmin" style="width: 18rem;">
 
     <router-link v-if="type ==='client'" :to="`/dashboard/vehicles/${user.id}`" style="cursor: pointer;font-size: 15px;position:absolute;margin-left: 20px;top:0;margin-top: 10px" title="Vehicles" class="badge badge-warning"><i class="fas fa-car"></i></router-link>
-    <router-link v-if="type ==='employee'" :to="`/dashboard/consultations/employee/${user.id}`" style="cursor: pointer;font-size: 15px;position:absolute;margin-left: 20px;top:0;margin-top: 10px" title="Consultations" class="badge badge-warning"><i class="fas fa-info"></i></router-link>
+    <router-link v-if="type ==='employee' && !unassigned" :to="`/dashboard/consultations/employee/${user.id}`" style="cursor: pointer;font-size: 15px;position:absolute;margin-left: 20px;top:0;margin-top: 10px" title="Consultations" class="badge badge-warning"><i class="fas fa-info"></i></router-link>
 
     <div style="position: absolute;top:10px;width: 100px;left: 72%">
+        <span v-if="unassigned && station && !sending" @click="assingEmployeeToStation(user)" style="cursor: pointer;font-size: 15px;margin-left: 30px" title="Assign" class="badge badge-success"><i class="fas fa-check-double"></i></span>
 
-        <span @click="openEdit(user)" style="cursor: pointer;font-size: 15px" title="Edit" class="badge badge-success"><i class="fas fa-edit"></i></span>
-        <span @click="showConfirmationDialog = true, selectedUser = {... user}" style="cursor: pointer;font-size: 15px" title="Delete" class="badge badge-danger"><i class="fas fa-trash"></i></span>
+        <span v-if="!unassigned" @click="openEdit(user)" style="cursor: pointer;font-size: 15px" title="Edit" class="badge badge-success"><i class="fas fa-edit"></i></span>
+        <span v-if="!unassigned" @click="showConfirmationDialog = true, selectedUser = {... user}" style="cursor: pointer;font-size: 15px" title="Delete" class="badge badge-danger"><i class="fas fa-trash"></i></span>
     </div>
     <div style="display:flex;width: 100%;justify-content: center">
         <img v-if="type === 'station admin'" class="stationAdminPic" width="80" src="../../assets/images/stationAdmin.png">
@@ -21,8 +37,11 @@
         <span><b>Email:</b> {{user.user.email}}</span><br>
 
         <span><b v-if="type !== 'client'">Station:</b><b v-else>Registered at:</b>
-                    <router-link title="Got to station details" :to="`/dashboard/bornes/${user.station.id}`" class="badge badge-success" v-if="user.station">{{user.station.label}}</router-link>
-                    <span class="badge badge-warning" v-else >No station set</span>
+                    <span v-if="user.station">
+                    <router-link title="Got to station details" :to="`/dashboard/bornes/${user.station.id}`" class="badge badge-success" >{{user.station.label}}</router-link>
+                    <span @click="removeFromStation(user)" v-if="!unassigning && type !== 'client'" style="font-size: 15px;cursor: pointer" title="Unassign from station" class="badge badge-danger"><i class="far fa-minus-square"></i></span>
+                    </span>
+                <span class="badge badge-warning" v-else >No station set</span>
                 </span>
 
         <hr v-if="type === 'client'">
@@ -51,6 +70,7 @@
                     :user="selectedUser"
                     @close="showSetBarCode=false"></bar-code>
     </div>
+</div>
 </template>
 
 
@@ -61,6 +81,8 @@
     import BarCode from "../dialogs/BarCode";
     import Swal from 'sweetalert2';
     import UserService from "../../services/UserService";
+    import EmployeeService from "../../services/EmployeeService";
+    import StationAdminService from "../../services/StationAdminService";
     export default {
         name: 'UserCards',
         components: {
@@ -69,11 +91,21 @@
             ConfirmationDialog,
         },
         props: {
+            station: Object,
             users: Object,
             type: String,
+            unassigned: Boolean
+        },
+        computed: {
+            usersList() {
+                return this.users.filter((user)=> (user.user.firstName+" "+user.user.lastName+" "+user.user.email+" "+user.user.phone).toLowerCase().includes(this.searchValue.trim().toLowerCase()));
+            },
         },
         data() {
             return {
+                searchValue:'',
+                unassigning:false,
+                sending: false,
                 showSetBarCode: false,
                 modalTitle: "",
                 showModal: false,
@@ -83,6 +115,74 @@
             };
         },
         methods: {
+            removeFromStation(user) {
+                this.unassigning = true;
+                if(this.type === "employee") {
+                    EmployeeService.unassignFromStation(user.id,user.station.id)
+                        .then(()=>{
+                            this.unassigning = false;
+                            if(!this.station)
+                                user.station = null;
+                            else{
+                                // eslint-disable-next-line vue/no-mutating-props
+                                this.users.splice(this.users.indexOf(user),1);
+                            }
+                            Swal.fire({
+                                position: 'bottom-right',
+                                background: "rgba(19,150,71,0.8)",
+                                color: "white",
+                                text:'Employee unassigned successfully',
+                                timerProgressBar: true,
+                                showConfirmButton: false,
+                                timer: 1000
+                            });
+                        })
+                        .catch((err)=>{
+                            console.log(err);
+                        })
+                } else {
+                    StationAdminService.unassignStationAdmin(user.station.id)
+                        .then(()=>{
+                            this.unassigning = false;
+                            user.station = null;
+                            Swal.fire({
+                                position: 'bottom-right',
+                                background: "rgba(19,150,71,0.8)",
+                                color: "white",
+                                text:'Station admin unassigned successfully',
+                                timerProgressBar: true,
+                                showConfirmButton: false,
+                                timer: 1000
+                            });
+                        })
+                        .catch((err)=>{
+                            console.log(err);
+                        })
+                }
+            },
+            assingEmployeeToStation(user) {
+                this.sending = true;
+                EmployeeService.assignToStation(user.id, this.station.id)
+                    .then(()=>{
+                        // eslint-disable-next-line vue/no-mutating-props
+                        this.users.splice(this.users.indexOf(user),1);
+                        this.sending = false;
+                        user.station = this.station;
+                        this.$emit('add-emp', user);
+                        Swal.fire({
+                            position: 'bottom-right',
+                            background: "rgba(19,150,71,0.8)",
+                            color: "white",
+                            text:'Employee assigned successfully',
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                    })
+            },
             setUserValidated(user) {
                 this.$emit('user-emitted',user);
             },

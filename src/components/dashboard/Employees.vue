@@ -1,9 +1,8 @@
 <template>
-    <div>
+    <div> <button v-if="!loading" type="button" @click="showModal = true, modalTitle='Add employee'" style="float: right;margin-right: 40px" title="Add station admin" class="btn btn-warning"><i class="fas fa-plus"></i></button>
 
-        <button v-if="!loading" type="button" @click="showModal = true, modalTitle='Add employee'" style="float: right;margin-right: 40px" title="Add station admin" class="btn btn-warning"><i class="fas fa-plus"></i></button>
-        <br>
-        <hr v-if="!loading">
+        <h1>Employees</h1>
+         <hr v-if="!loading">
         <div class="spinner-container" v-if="loading" >
             <div class="spinner-grow text-warning spinner" role="status"><span class="sr-only">Loading...</span></div>
         </div>

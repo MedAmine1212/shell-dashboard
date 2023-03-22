@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = "http://localhost:8000/api/station/";
+const baseUrl = process.env.VUE_APP_API_BASE_URL+"api/station/";
 import auth from './../services/auth.js'
 const requestOptions = {
     headers: {

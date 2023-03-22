@@ -30,7 +30,12 @@
                     <input v-if="thisUser" style="border: 1px solid darkgrey;border-radius: 5px" v-model="thisUser.user.email" type="text" id="emailEdit"  class="form-control" />
                     <input v-else style="border: 1px solid darkgrey;border-radius: 5px" type="text" id="emailInput"  class="form-control" />
                 </div>
-                <div v-if="!thisUser && type !== 'client'"  class="form-outline mb-4">
+                <div v-if="type === 'employee'"  class="form-outline mb-4">
+                    <label style="float: left" class="form-label">Barcode</label>
+                    <input v-if="thisUser" style="border: 1px solid darkgrey;border-radius: 5px" v-model="thisUser.user.barCode" type="text" id="barCodeEdit"  class="form-control" />
+                    <input v-else style="border: 1px solid darkgrey;border-radius: 5px" value="" type="text" id="barCodeInput"  class="form-control" />
+                 </div>
+                <div v-if="!thisUser && type !== 'client' && type !== 'employee'"  class="form-outline mb-4">
                     <label style="float: left" class="form-label">Password</label>
                     <input style="border: 1px solid darkgrey;border-radius: 5px" value="" type="password" id="passwordInput"  class="form-control" />
                 </div>
@@ -105,7 +110,7 @@
                     });
                     return false;
                 }
-                if(phone.length !== 8 || isNaN(phone.length)) {
+                if(phone.length !== 8 || isNaN(phone)) {
                     Swal.fire({
                         position: 'bottom-right',
                         background: "rgba(228,161,27,0.8)",
@@ -138,14 +143,31 @@
                 let lastName = document.getElementById("lastNameInput").value;
                 let phone = document.getElementById("phoneInput").value;
                 let email = document.getElementById("emailInput").value;
-                let password = document.getElementById("passwordInput").value;
+                let password = "";
+                if(this.type  !== "client" && this.type !== "employee")
+                    password = document.getElementById("passwordInput").value;
+                let barCode = "";
+                if(this.type === "employee")
+                    barCode = document.getElementById("barCodeInput").value;
                 if(this.checkInputs(firstName, lastName, phone, email)) {
-                    if(password.length < 4 && this.type !== 'client') {
+                    if(password.length < 4 && this.type !== 'client' && this.type !== "employee") {
                         Swal.fire({
                             position: 'bottom-right',
                             background: "rgba(228,161,27,0.8)",
                             color: "white",
                             text: 'Minimum password length is 4 characters',
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                        return;
+                    }
+                    if(this.type === 'employee' && (barCode.length === 0 || isNaN(barCode))) {
+                        Swal.fire({
+                            position: 'bottom-right',
+                            background: "rgba(228,161,27,0.8)",
+                            color: "white",
+                            text: 'Invalid barcode',
                             timerProgressBar: true,
                             showConfirmButton: false,
                             timer: 1000
@@ -173,7 +195,7 @@
                                 this.sending = false;
                             })
                     } else if(this.type === "employee"){
-                        EmployeeService.add(firstName, lastName, phone, email, password)
+                        EmployeeService.add(firstName, lastName, phone, email, barCode)
                             .then((res)=>{
                                 this.refreshUser(res);
                             })

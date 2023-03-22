@@ -63,22 +63,6 @@
                 </span>
         </h6>
         <hr style="width: 45px;margin-left: 18px">
-        <h6 style="margin-left: 10px">
-            <b style="margin-right: 7px">Work schedule:</b>
-            <span v-if="station.work_schedule" class="badge badge-success">
-                <span style="cursor:pointer;"><b>shift start:</b> {{station.work_schedule.shiftStart}}, <b>Shift end:</b> {{station.work_schedule.shiftEnd}} | <b>Pause start:</b> {{station.work_schedule.pauseStart}}, <b>Pause end:</b> {{station.work_schedule.pauseEnd}}</span>
-                 <span  style="cursor:pointer;margin-left: 15px" title="edit">
-                        <i class="far fa-edit"></i>
-                    </span>
-            </span>
-            <span v-else class="badge badge-warning">
-                <span style="cursor:pointer;">No set</span>
-             <span  style="cursor:pointer;margin-left: 15px" title="edit">
-                        <i class="far fa-edit"></i>
-                    </span>
-            </span>
-        </h6>
-        <hr style="width: 45px;margin-left: 18px">
         <div style="height: 40px">
         <h6 v-if="!editAddress" style="margin-left: 10px"><b>Address:</b> {{editedStation.address}}
             <span class="badge badge-success" @click="editAddress = true"  style="cursor:pointer;margin-left: 15px" title="edit">
@@ -100,16 +84,62 @@
     <div class="spinner-container" v-if="loading" >
         <div class="spinner-grow text-warning spinner" role="status"><span class="sr-only">Loading...</span></div>
     </div>
+
+    <hr v-if="!loading" style="border:1px solid black">
+    <div v-if="!loading">
+        <button  v-if="showBornes" type="button" @click="showModal = true" title="Add borne" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
+
+        <span style="margin-left: 5px">
+        <h3>Bornes
+          <span @click="showBornes = false" v-if="showBornes" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
+            <span @click="showBornes = true" v-if="!showBornes" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
+
+        </h3>
+    </span>
+        <div v-if="showBornes">
+            <div v-if="bornes.length" class="borne-container">
+                <div class="borne" v-for="borne in bornes" :key="borne.id">
+                    <img title="Online" v-if="borne.status" height="170" src="./../../assets/images/borne-online.png">
+                    <img title="Offline" v-else height="170" src="./../../assets/images/borne-offline.png">
+                    <h5 style="margin-top: 15px;margin-left: 12px;width: 100px">Borne {{borne.id}}</h5> <span style="cursor: pointer" @click="showDetailsModal(borne)" class="badge badge-warning">Details</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 100px" v-else class="text-gray-600 text-center py-16">
+                No bornes in this station
+            </div>
+        </div>
+    </div>
+
     <div v-if="!loading">
         <hr>
-        <h3 v-if="station.employees.length">Station employees
+        <h3>Work schedule
+            <span @click="showWorkSchedule = false" v-if="showWorkSchedule" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
+            <span @click="showWorkSchedule = true" v-if="!showWorkSchedule" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
+        </h3><br>
+        <div v-if="showWorkSchedule">
+            <div v-if="station.work_schedule">
+                <div>
+                   <router-link :to="`/dashboard/workschedules/${station.id}`"><button style="float:right;margin-right: 70px" title="Change work schedule" :disabled="sending" class="btn btn-warning"><i class="fas fa-exchange-alt"></i></button></router-link>
+                    <single-work-schedule style="width: 100%" :key="station.work_schedule.id" :ws="station.work_schedule" :sender="'station'"></single-work-schedule>
+                </div>
+            </div>
+            <div style="margin-top: 200px" v-else class="text-gray-600 text-center py-16">
+                Work schedule not set
+            </div>
+        </div>
+    </div>
+    <div v-if="!loading">
+        <hr>
+        <button v-if="showEmployees" type="button" @click="showAddEmployee = true" title="Add employee" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
+        <h3>Station employees
             <span @click="showEmployees = false" v-if="showEmployees" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
             <span @click="showEmployees = true" v-if="!showEmployees" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
         </h3>
         <div v-if="showEmployees">
             <div v-if="station.employees.length">
                 <div>
-                    <UserCards :users="station.employees" :type="'employee'"></UserCards>
+                    <UserCards :station="station" :users="station.employees" :type="'employee'"></UserCards>
                 </div>
             </div>
             <div style="margin-top: 200px" v-else class="text-gray-600 text-center py-16">
@@ -117,31 +147,45 @@
             </div>
         </div>
     </div>
-    <hr v-if="!loading" style="border:1px solid black">
-    <div style="min-height: 200px;" v-if="!loading">
-    <button  type="button" @click="showModal = true" title="Add borne" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
 
-    <span style="margin-left: 5px">
-        <h3 v-if="bornes.length">Bornes
-          <span @click="showBornes = false" v-if="showBornes" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
-            <span @click="showBornes = true" v-if="!showBornes" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
-
+    <div  v-if="!loading">
+        <hr>
+        <button  v-if="showServices" type="button" @click="showAddServices = true" title="Add service to station" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
+        <h3>Station services
+            <span @click="showServices = false" v-if="showServices" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
+            <span @click="showServices = true" v-if="!showServices" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
         </h3>
-    </span>
-    <div v-if="showBornes">
-    <div v-if="bornes.length" class="borne-container">
-            <div class="borne" v-for="borne in bornes" :key="borne.id">
-                <img title="Online" v-if="borne.status" height="170" src="./../../assets/images/borne-online.png">
-                <img title="Offline" v-else height="170" src="./../../assets/images/borne-offline.png">
-            <h5 style="margin-top: 15px;margin-left: 12px;width: 100px">Borne {{borne.id}}</h5> <span style="cursor: pointer" @click="showDetailsModal(borne)" class="badge badge-warning">Details</span>
+        <br>
+        <div style="margin-top: 10px" v-if="showServices">
+            <div v-if="station.station_services.length">
+                <div style="display: flex" v-for="service in station.station_services" :key="service.id">
+                    <single-service style="width: 85%" :sender="'station'"  :serv="service"></single-service>
+                    <button v-if="!removingStatonService" style="margin-top: 40px;height: 40px" @click="removeServiceFromStation(service)" class="btn btn-danger" title="Remove service from station"><i class="far fa-minus-square"></i></button>
+                </div>
+            </div>
+            <div style="margin-top: 200px" v-else class="text-gray-600 text-center py-16">
+                No services in this station
+            </div>
         </div>
     </div>
 
-    <div style="margin-top: 100px" v-else class="text-gray-600 text-center py-16">
-        No bornes in this station
+    <div style="min-height: 400px" v-if="!loading">
+        <hr>
+        <button v-if="showProducts" type="button" @click="showAddProducts = true" title="Add product to this station" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
+        <h3>Station products
+            <span @click="showProducts = false" v-if="showProducts" style="height: 20px;width: 30px;font-size: 15px; cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-up"></i></span>
+            <span @click="showProducts = true" v-if="!showProducts" style="height: 20px;width: 30px;font-size: 15px ;cursor: pointer" class="badge badge-warning"><i class="fas fa-caret-down"></i></span>
+        </h3>
+        <div v-if="showProducts">
+            <div v-if="station.station_products.length" class="products">
+                <single-product @product-deleted="deleteProduct(product)" v-for="product in station.station_products" :key="product.product.id" :prod="product" :sStock="product.stock" :station="station"></single-product>
+            </div>
+            <div style="margin-top: 200px" v-else class="text-gray-600 text-center py-16">
+                No products in this station to show
+            </div>
+        </div>
     </div>
-    </div>
-    </div>
+
     <!--Add a new borne modal-->
     <div v-if="showModal" class="dialog-container" :class="{ 'd-none': !showModal }">
         <div class="dialog-box">
@@ -160,7 +204,8 @@
             </div>
             <div class="dialog-footer">
                 <button type="button" class="btn btn-info dialog-button" @click="addBorne()">
-                    Add
+                    <span v-if="!sending">Add</span>
+                    <div v-else class="spinner-grow text-bg-light" style="height: 20px;width: 20px" role="status"><span class="sr-only">Sending...</span></div>
                 </button>
                 <button type="button" class="btn btn-danger dialog-button" @click="showModal = false">
                     Cancel
@@ -172,14 +217,14 @@
     <!--Borne details modal-->
 
     <div v-if="showDetailsModel" class="dialog-container" :class="{ 'd-none': !showDetailsModel }">
-        <div class="dialog-box">
+        <div style="max-width: 70% !important;" class="dialog-box">
             <div class="dialog-header">
                 <h5 class="dialog-title">Borne <b>{{this.selectedBorne.id}}</b> details</h5>
                 <button type="button" class="dialog-close" @click="showDetailsModel = false, editBorne = false">
                     &times;
                 </button>
             </div>
-            <div class="dialog-body">
+            <div style="max-height: 500px;overflow-y: auto" class="dialog-body">
                 <span><span style="font-weight: bold">Borne ID:</span> {{this.selectedBorne.id}}</span><br>
                 <span><span style="font-weight: bold">Status:</span> <span v-if="selectedBorne.status" class="badge badge-success">Online</span><span v-else class="badge badge-danger">Offline</span></span><br>
                 <span><span style="font-weight: bold">Last heartbeat:</span> {{this.selectedBorne.lastHeartBeat}}</span><br>
@@ -199,6 +244,22 @@
                             <i class="fas fa-times-circle"></i>
                     </span>
                     </div>
+                </div>
+                <hr>
+                <div>
+                    <button @click="openAds()" style="float: right;margin-top: -5px;margin-right: 8px" v-if="adsLoaded" type="button" title="Add advertisements to this borne" class="btn btn-warning button-container"><i class="fas fa-plus"></i></button>
+                <h4>Ads</h4>
+                <div v-if="adsLoaded">
+                    <div class="ads-container" v-if="this.selectedBorne.advertisements.length">
+                        <single-ad @remove-ad="removeAdFromBorne(ad)" v-for="ad in this.selectedBorne.advertisements" :key="ad.id" :sender="'borne'" :advertisement="ad"></single-ad>
+                    </div>
+                    <div style="margin-top: 20px" v-else class="text-gray-600 text-center py-16">
+                        No ads associated to this borne
+                    </div>
+                </div>
+                <div class="spinner-container" v-else>
+                    <div class="spinner-grow text-warning spinner" role="status"><span class="sr-only">Loading...</span></div>
+                </div>
                 </div>
             </div>
             <div class="dialog-footer">
@@ -227,29 +288,70 @@
                      :type="'station admin'"
                      @close="showAddStationAdminModal=false"
                      ref="AddUserDialog" ></add-user-dialog>
+    <unassigned-employees v-if="showAddEmployee" :station="station"  :modalTitle="'Assign employees to '+station.label"
+                     :show.sync="showAddEmployee"
+                        @add-emp="addEmp"
+                     @close="showAddEmployee=false"
+                     ref="AddUserDialog" ></unassigned-employees>
+
+    <available-services-to-add v-if="showAddServices" :station="station"
+                          :show.sync="showAddServices"
+                          @add-service="addService"
+                          @close="showAddServices=false"
+                          ref="AddUserDialog" ></available-services-to-add>
+
+    <available-products-to-add v-if="showAddProducts" :station="station"
+                               :show.sync="showAddProducts"
+                               @add-product="addProduct"
+                               @close="showAddProducts=false"></available-products-to-add>
 
 </div>
 </template>
 
 <script>
+    import SingleAd from "./SingleAd";
     import BorneService from "./../../services/BorneService";
+    import SingleWorkSchedule from "./SingleWorkSchedule";
     import StationService from "./../../services/StationService";
+    import SingleProduct from "./SingleProduct"
     import ConfirmationDialog from "../dialogs/ConfirmationDialog"
     import AddUserDialog from "../dialogs/AddUserDialog";
+    import UnassignedEmployees from "../dialogs/UnassignedEmployees";
+    import AvailableServicesToAdd from "../dialogs/AvailableServicesToAdd";
+    import AvailableProductsToAdd from "../dialogs/AvailableProductsToAdd";
     import Echo from "laravel-echo";
     import UserCards from "./UserCards";
+    import SingleService from "./SingleService";
     import 'bootstrap/dist/js/bootstrap.bundle.min.js'
    import Swal from 'sweetalert2'
    import router from "@/router";
     import StationAdminService from "../../services/StationAdminService";
+    import StationServiceService from "../../services/StationServiceService";
+    import AdvertisementService from "../../services/AdvertisementService";
    export default {
        components: {
+           SingleAd,
+           AvailableServicesToAdd,
+           AvailableProductsToAdd,
+           UnassignedEmployees,
            ConfirmationDialog,
            AddUserDialog,
+           SingleProduct,
            UserCards,
+           SingleService,
+           SingleWorkSchedule,
        },
        data() {
            return {
+               adsLoaded: false,
+               showWorkSchedule: true,
+               showAddProducts: false,
+               showProducts: true,
+               showAddServices: false,
+               sending:false,
+               removingStatonService: false,
+               showServices:true,
+               showAddEmployee: false,
                showEmployees: true,
                showBornes: true,
                showAddStationAdminModal: false,
@@ -278,6 +380,78 @@
        // eslint-disable-next-line vue/multi-word-component-names
        name: 'Bornes',
         methods: {
+            openAds() {
+                router.push({name: "ads" ,params: { bId: this.selectedBorne.id, sId: this.station.id }} );
+            },
+            removeAdFromBorne(ad) {
+                AdvertisementService.removeAdFromBorne(ad.id, this.selectedBorne.id)
+                    .then(()=>{
+                        this.selectedBorne.advertisements.splice(this.selectedBorne.advertisements.indexOf(ad),1);
+                        Swal.fire({
+                            position: 'bottom-right',
+                            background: "rgba(19,150,71,0.8)",
+                            color: "white",
+                            text: 'Ad removed successfully',
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                    })
+            },
+            addProduct(prod) {
+                this.station.station_products.push(prod);
+            },
+           deleteProduct(prod) {
+               this.station.station_products.splice(this.station.station_products.indexOf(prod),1)
+           },
+            addService(stationService) {
+                this.station.station_services.push(stationService);
+            },
+            removeServiceFromStation(station_service) {
+                Swal.fire({
+                    title: 'Remove service',
+                    text: 'Are you sure you want to remove this service from this station ?',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+                    this.removingStatonService = true;
+                    StationServiceService.removeServiceFromStation(station_service)
+                        .then(() => {
+                            this.removingStatonService = false;
+                            for (let i = 0; i < this.station.station_services.length; i++) {
+                                if (station_service.service_id == this.station.station_services[i].service_id) {
+                                    console.log("here: ", station_service.service_id, this.station.station_services[i].service_id)
+                                    this.station.station_services.splice(i, 1);
+                                    break;
+                                }
+                            }
+                            Swal.fire({
+                                position: 'bottom-right',
+                                background: "rgba(19,150,71,0.8)",
+                                color: "white",
+                                text: 'Service removed successfully',
+                                timerProgressBar: true,
+                                showConfirmButton: false,
+                                timer: 1000
+                            });
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                }
+                });
+            },
+            addEmp(user) {
+                this.station.employees.push(user);
+            },
             async setAdmin(user) {
                 this.selectedId= user.id;
                 this.unsetStationAdmins = [];
@@ -472,8 +646,17 @@
                }
            },
            async showDetailsModal(borne) {
+                this.adsLoaded = false;
                this.selectedBorne = borne;
                this.showDetailsModel = true;
+                AdvertisementService.findAllByBorneId(borne.id)
+                    .then((res)=>{
+                        this.selectedBorne.advertisements = res.data.advertisements;
+                        this.adsLoaded = true;
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                    })
            },
           async addBorne() {
               this.minutes = document.getElementById("heartBeatInput").value;
@@ -488,8 +671,10 @@
                       timer: 2500
                   })
               }  else {
+                  this.sending = true;
                   await BorneService.addBorne(this.$route.params.id, this.minutes)
                       .then((response) => {
+                          this.sending = false;
                           this.minutes = null;
                           Swal.fire({
                               position: 'bottom-right',
@@ -506,6 +691,7 @@
 
                       })
                       .catch((error) => {
+                          this.sending = false;
                           console.error(error);
                           this.showModal = false;
                       });
@@ -517,10 +703,6 @@
            await StationService.findById(this.$route.params.id)
                .then( async (response) => {
                    this.station = response.data.station;
-                   let st = {...this.station};
-                   st.employees = {...this.station.employees};
-                   st.employees = {...this.station.employees};
-                   st.employees = [];
                    for(let i=0;i<this.station.employees.length;i++) {
                        this.station.employees[i].station = this.station;
                    }
@@ -529,6 +711,15 @@
                    await BorneService.getAllByStationId(this.$route.params.id)
                        .then((response) => {
                            this.bornes = response.data.bornes;
+                           if(window.localStorage.getItem("BORNE_ID") != null) {
+                               for(let i=0;i<this.bornes.length;i++) {
+                                   if(this.bornes[i].id == window.localStorage.getItem("BORNE_ID")) {
+                                       this.showDetailsModal(this.bornes[i]);
+                                       window.localStorage.removeItem("BORNE_ID");
+                                       break;
+                                   }
+                               }
+                           }
                            this.loading = false;
                        })
                        .catch((error) => {

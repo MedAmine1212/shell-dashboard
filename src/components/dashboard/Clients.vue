@@ -4,10 +4,10 @@
 
         <div v-if="!loading" class="clients-header">
         <h1>Clients</h1>
-        <div class="flip-container">
-            <div @click="showAll = true, toShow = allClients" :class="{ 'flip-active': showAll }" class="flip">All</div>
-            <div @click="showAll = false, toShow = unverifiedClients" :class="{ 'flip-active': !showAll }" class="flip">Unvalidated</div>
-        </div>
+            <div style="margin-top: 3px" class="flip-container">
+                <div @click="showAll = true, toShow = allClients" :class="{ 'flip-active': showAll }" class="flip">All</div>
+                <div @click="showAll = false, toShow = unverifiedClients" :class="{ 'flip-active': !showAll }" class="flip">Unvalidated</div>
+            </div>
         </div>
         <hr v-if="!loading">
         <div class="spinner-container" v-if="loading" >

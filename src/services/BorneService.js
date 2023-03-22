@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = "http://localhost:8000/api/borne/";
+const baseUrl = process.env.VUE_APP_API_BASE_URL+"api/borne/";
 import auth from './../services/auth.js'
 const requestOptions = {
     headers: {

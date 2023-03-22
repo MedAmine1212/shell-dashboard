@@ -50,14 +50,14 @@
                     ><i class="fad fa-servicestack fa-fw me-3"></i><span>Products</span></router-link
                     >
                     <router-link
-                            to="/dashboard/ads"
+                            :to="`/dashboard/ads/0/0`"
                             active-class="active"
                             class="list-group-item list-group-item-action py-2 ripple"
                     ><i class="fas fa-globe fa-fw me-3"></i
                     ><span>Ads</span></router-link
                     >
                     <router-link
-                            to="/dashboard/workschedules"
+                            :to="`/dashboard/workschedules/0`"
                             active-class="active"
                             class="list-group-item list-group-item-action py-2 ripple"
                     ><i class="fas fa-calendar fa-fw me-3"></i
@@ -104,19 +104,7 @@
                             loading="lazy"
                     />
                 </a>
-                <!-- Search form -->
-                <form class="d-none d-md-flex input-group w-auto my-auto">
-                    <input
-                            autocomplete="off"
-                            type="search"
-                            class="form-control rounded"
-                            placeholder='Search (ctrl + "/" to focus)'
-                            style="min-width: 225px"
-                    />
-                    <span class="input-group-text border-0"
-                    ><i class="fas fa-search"></i
-                    ></span>
-                </form>
+
 
                 <!-- Right links -->
                 <ul class="navbar-nav ms-auto d-flex flex-row">
@@ -264,6 +252,7 @@
 </template>
 
 <script>
+
 
     export default {
         name: 'DashboardSideBar',
